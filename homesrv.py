@@ -12,6 +12,36 @@ import sys
 #     "apk": "apk add ?"
 # }
 
+def main():
+    os = platform.system()
+    if os != "Linux":
+        print("Homesrv is only designed to work on Linux operating systems.")
+        sys.exit(1)
+
+    distro, release = find_distro()
+    if distro is None:
+        print("Cannot determine your Linux distribution.")
+        sys.exit(2)
+    print(distro, release)
+
+    # pm = find_package_manager()
+    # if pm is None:
+    #     print("Cannot determine your Linux distribution's package manager.")
+    #     sys.exit(2)
+    # print(pm)
+
+    test = prompt_yn("Does this work?")
+    print(test)
+
+    test2 = prompt_list_selection(
+        "Below is a list of available apps to install. Options with \"[*]\" beside them will be installed. " \
+        "Options with \"[ ]\" beside them will not be installed.",
+        ["Portainer (Docker management)", "Nextcloud (File sync)", "Jellyfin (Media streaming)", "Miniflux (RSS reader)"],
+        [True, True, False, False]
+    )
+    print(test2)
+
+
 def find_distro():
     """Determine which Linux distro is being used."""
     try:
@@ -62,7 +92,7 @@ def prompt_list_selection(prompt, options_list, initial_state):
         print(prompt)
         for i, opt in enumerate(options_list):
             sel = "*" if state[i] else " "
-            print(f"  [{sel}] {i+1}. {opt}")
+            print(f" [{sel}] {i+1}. {opt}")
         print("Type a number below to toggle that item between selected and unselected. When you are satisfied, type \"done\".")
         inpt = input("> ")
         try:
@@ -110,36 +140,6 @@ def install_docker(distro, release):
         except subprocess.CalledProcessError:
             print("Unable to install Docker. Exiting.")
             sys.exit(3)
-
-
-def main():
-    os = platform.system()
-    if os != "Linux":
-        print("Homesrv is only designed to work on Linux operating systems.")
-        sys.exit(1)
-
-    distro, release = find_distro()
-    if distro is None:
-        print("Cannot determine your Linux distribution.")
-        sys.exit(2)
-    print(distro, release)
-
-    # pm = find_package_manager()
-    # if pm is None:
-    #     print("Cannot determine your Linux distribution's package manager.")
-    #     sys.exit(2)
-    # print(pm)
-
-    test = prompt_yn("Does this work?")
-    print(test)
-
-    test2 = prompt_list_selection(
-        "Below is a list of available apps to install. Options with \"[*]\" beside them will be installed. " \
-        "Options with \"[ ]\" beside them will not be installed.",
-        ["Portainer (Docker management)", "Nextcloud (File sync)", "Jellyfin (Media streaming)", "Miniflux (RSS reader)"],
-        [True, True, False, False]
-    )
-    print(test2)
 
 
 if __name__ == "__main__":
