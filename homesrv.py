@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
+import argparse
+import pathlib
 import platform
+import readline
 import subprocess
 import sys
 
@@ -12,7 +15,7 @@ import sys
 #     "apk": "apk add ?"
 # }
 
-def main():
+def init(args):
     os = platform.system()
     if os != "Linux":
         print("Homesrv is only designed to work on Linux operating systems.")
@@ -30,16 +33,44 @@ def main():
     #     sys.exit(2)
     # print(pm)
 
-    test = prompt_yn("Does this work?")
-    print(test)
+    def_config_location = str(pathlib.Path(pathlib.Path.home(), ".config", "homesrv"))
+    print(f"By default, configuration files for apps will be stored here: {def_config_location}")
+    print("If you wish to change this, type a new location below. Otherwise, press Enter to accept the default.")
+    config_location = input("> ") or def_config_location
+    print(f"Config files will be stored in: {config_location}")
+    print()
 
-    test2 = prompt_list_selection(
+    def_userdata_location = "/var/lib/homesrv"
+    print(f"By default, user data stored by apps will be kept here: {def_userdata_location}")
+    print("If you wish to change this, type a new location below. Otherwise, press Enter to accept the default.")
+    userdata_location = input("> ") or def_userdata_location
+    print(f"User data will be stored in: {userdata_location}")
+
+    app_list = prompt_list_selection(
         "Below is a list of available apps to install. Options with \"[*]\" beside them will be installed. " \
         "Options with \"[ ]\" beside them will not be installed.",
-        ["Portainer (Docker management)", "Nextcloud (File sync)", "Jellyfin (Media streaming)", "Miniflux (RSS reader)"],
+        [
+            "Portainer (Docker management)",
+            "Nextcloud (File sync)",
+            "Jellyfin (Media streaming)",
+            "Miniflux (RSS reader)"
+        ],
         [True, True, False, False]
     )
-    print(test2)
+    print(app_list)
+
+
+def install(args):
+    raise NotImplementedError
+
+def start(args):
+    raise NotImplementedError
+
+def stop(args):
+    raise NotImplementedError
+
+def restart(args):
+    raise NotImplementedError
 
 
 def find_distro():
@@ -143,4 +174,24 @@ def install_docker(distro, release):
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Manage your home server.")
+    parser.set_defaults(func=init)
+    subparsers = parser.add_subparsers()
+
+    parser_init = subparsers.add_parser('init', help="Initialize the home server (first-time setup).")
+    parser_init.set_defaults(func=init)
+
+    parser_install = subparsers.add_parser('install', help="Install new apps after the initial setup.")
+    parser_init.set_defaults(func=install)
+
+    parser_start = subparsers.add_parser('start', help="Start apps by listing them.")
+    parser_start.set_defaults(func=start)
+
+    parser_stop = subparsers.add_parser('stop', help="Stop apps by listing them.")
+    parser_stop.set_defaults(func=stop)
+
+    parser_restart = subparsers.add_parser('restart', help="Restart apps by listing them.")
+    parser_restart.set_defaults(func=restart)
+
+    args = parser.parse_args()
+    args.func(args)
